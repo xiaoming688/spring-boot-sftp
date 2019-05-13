@@ -173,11 +173,11 @@ public class SftpService {
     /**
      * 每隔3min
      */
-    @Scheduled(cron = "0 3 * * * ?")
+    @Scheduled(cron = "0 0/30 * * * ?")
     public void downloadTask() {
         SFTPUtils sftp = null;
         try {
-            logger.info(new Date() + " download 3 min task start...");
+            logger.info(new Date() + " download 30 min task start...");
 
             Map<String, String> remotePaths = new HashMap<String, String>();
 
