@@ -170,29 +170,38 @@ public class SftpService {
 
     }
 
-    @Scheduled(cron = "0/60 * * * * ?")
+    /**
+     * 每隔3min
+     */
+    @Scheduled(cron = "0 3 * * * ?")
     public void downloadTask() {
         SFTPUtils sftp = null;
         try {
-            logger.info(new Date() + " task start...");
-            String remotePath = "/sclp/orig/";
+            logger.info(new Date() + " download 3 min task start...");
+
+            Map<String, String> remotePaths = new HashMap<String, String>();
+
+            remotePaths.put("/sclp/orig/orderstatus/", "Orderstatus\\");
+            remotePaths.put("/sclp/orig/orderunfreeze/", "Orderunfreeze\\");
+
+//            String remotePath = "/sclp/orig/";
             String remoteSendPath = "/sclpsend/test/";
             // 本地存放地址
-            String localPath = "D:\\downLoadFiles\\";
-            if (!localPath.endsWith("\\")) {
-                localPath = localPath + "\\";
+            String localPath = "C:\\工作\\en\\really\\Orig\\";
+            for(String remotePath: remotePaths.keySet()){
+                String localPathTemp = localPath + remotePaths.get(remotePath);
+                File file = new File(localPathTemp);
+                if (!file.exists()) {
+                    file.mkdirs();
+                }
+                sftp = new SFTPUtils(sftpHost, sftpUser, sftpPassword);
+                sftp.connect();
+                sftp.batchDownLoadFile(remotePath, localPathTemp, null, ".eof", false);
+                sftp.batchDownLoadFile(remotePath, localPathTemp, null, ".zip", false);
+                unCompress(file);
             }
-            File file = new File(localPath);
-            if (!file.exists()) {
-                file.mkdirs();
-            }
-            sftp = new SFTPUtils(sftpHost, sftpUser, sftpPassword);
-            sftp.connect();
-            sftp.batchDownLoadFile(remotePath, localPath, null, ".eof", false);
-            sftp.batchDownLoadFile(remotePath, localPath, null, ".zip", false);
 //            sftp.bacthUploadFile(remoteSendPath, localPath, false);
 
-            unCompress(file);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -200,8 +209,50 @@ public class SftpService {
                 sftp.disconnect();
             }
         }
-
     }
+
+    /**
+     * 每天7点下载
+     */
+    @Scheduled(cron = "0 0 7 * * ?")
+    public void downloadEveryTask() {
+        SFTPUtils sftp = null;
+        try {
+            logger.info(new Date() + " download 7 task start...");
+
+            Map<String, String> remotePaths = new HashMap<String, String>();
+
+            remotePaths.put("/sclp/orig/article/", "Article\\");
+            remotePaths.put("/sclp/orig/articlelist/", "Articlelist\\");
+            remotePaths.put("/sclp/orig/pos/", "Pos\\");
+            remotePaths.put("/sclp/orig/starange/", "Starange\\");
+
+//            String remotePath = "/sclp/orig/";
+            String remoteSendPath = "/sclpsend/test/";
+            // 本地存放地址
+            String localPath = "C:\\工作\\en\\really\\Orig\\";
+            for(String remotePath: remotePaths.keySet()){
+                String localPathTemp = localPath + remotePaths.get(remotePath);
+                File file = new File(localPathTemp);
+                if (!file.exists()) {
+                    file.mkdirs();
+                }
+                sftp = new SFTPUtils(sftpHost, sftpUser, sftpPassword);
+                sftp.connect();
+                sftp.batchDownLoadFile(remotePath, localPathTemp, null, ".eof", false);
+                sftp.batchDownLoadFile(remotePath, localPathTemp, null, ".zip", false);
+                unCompress(file);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (sftp != null) {
+                sftp.disconnect();
+            }
+        }
+    }
+
+
 
     public void unCompress(File file) {
         File[] localDir = file.listFiles();
@@ -209,7 +260,7 @@ public class SftpService {
             if (fileLocal.isDirectory()) {
                 unCompress(fileLocal);
             }
-            String localPathTemp = fileLocal.getParent() + "\\temp\\";
+            String localPathTemp = fileLocal.getParent();
             //不准确
             if (fileLocal.getName().endsWith("zip")) {
                 ZipUtil.unzip(fileLocal.getAbsolutePath(), localPathTemp);
