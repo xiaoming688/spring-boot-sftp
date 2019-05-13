@@ -1,0 +1,25 @@
+spring:
+  profiles:
+    active: dev
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100Mb
+      max-request-size: 100Mb
+
+
+sftp:
+  host:
+  port: 22
+  user:
+  password:
+  directory:
+  privateKeyPassPhrase:
+  privateKey:
+server:
+  port: 9090
+
+logging:
+  config: classpath:logback-spring.xml
+  path: D:\uploadLog\
