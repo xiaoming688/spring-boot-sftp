@@ -194,8 +194,8 @@ public class SftpService {
     /**
      * 每隔30min
      */
-    @Scheduled(cron = "0 0/30 * * * ?")
-//    @Scheduled(cron = "0/10 * * * * ?")
+//    @Scheduled(cron = "0 0/30 * * * ?")
+    @Scheduled(cron = "0/10 * * * * ?")
     public void downloadTask() {
         SFTPUtils sftp = null;
         try {
@@ -218,12 +218,13 @@ public class SftpService {
     /**
      * 每隔10min 上传
      */
-    @Scheduled(cron = "0 0/10 * * * ?")
+//    @Scheduled(cron = "0 0/10 * * * ?")
+    @Scheduled(cron = "0/20 * * * * ?")
     public void uploadTask() {
         SFTPUtils sftp = null;
         try {
             logger.info(new Date() + " uploadTask start...");
-            String remoteSendPath = "/sclpsend/";
+            String remoteSendPath = "/sclpsend/orig/";
             // 本地存放地址
             String localPath = "C:\\工作\\en\\reallySend\\Orig\\";
             sftp = new SFTPUtils(sftpHost, sftpUser, sftpPassword);
@@ -242,7 +243,7 @@ public class SftpService {
     /**
      * 每天7点
      */
-    @Scheduled(cron = "0 0 7 * * ?")
+    @Scheduled(cron = "0 30 22 * * ?")
     public void downloadEveryTask() {
         SFTPUtils sftp = null;
         try {
