@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class SFTPUtils {
@@ -107,7 +109,7 @@ public class SFTPUtils {
             Vector v = listFiles(remotePath);
             // sftp.cd(remotePath);
             if (v.size() > 0) {
-                System.out.println("本次处理文件个数不为零,开始下载" + remotePath + ": " + fileEndFormat);
+                log.info("本次处理文件个数不为零,开始下载" + remotePath + ": " + fileEndFormat);
                 Iterator it = v.iterator();
                 while (it.hasNext()) {
                     ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) it.next();
@@ -120,10 +122,12 @@ public class SFTPUtils {
                                 .trim();
                         fileEndFormat = fileEndFormat == null ? ""
                                 : fileEndFormat.trim();
+                        String remoteModifyTime = CSTFormat(attrs.getMtimeString());
+
                         // 三种情况
                         if (fileFormat.length() > 0 && fileEndFormat.length() > 0) {
                             if (filename.startsWith(fileFormat) && filename.endsWith(fileEndFormat)) {
-                                flag = downloadFile(remotePath, filename, localPath, filename);
+                                flag = downloadFile(remotePath, filename, localPath, filename, remoteModifyTime);
                                 if (flag) {
                                     filenames.add(localFileName);
                                     if (flag && del) {
@@ -133,7 +137,7 @@ public class SFTPUtils {
                             }
                         } else if (fileFormat.length() > 0 && "".equals(fileEndFormat)) {
                             if (filename.startsWith(fileFormat)) {
-                                flag = downloadFile(remotePath, filename, localPath, filename);
+                                flag = downloadFile(remotePath, filename, localPath, filename, remoteModifyTime);
                                 if (flag) {
                                     filenames.add(localFileName);
                                     if (flag && del) {
@@ -143,7 +147,7 @@ public class SFTPUtils {
                             }
                         } else if (fileEndFormat.length() > 0 && "".equals(fileFormat)) {
                             if (filename.endsWith(fileEndFormat)) {
-                                flag = downloadFile(remotePath, filename, localPath, filename);
+                                flag = downloadFile(remotePath, filename, localPath, filename, remoteModifyTime);
                                 if (flag) {
                                     filenames.add(localFileName);
                                     if (flag && del) {
@@ -152,7 +156,7 @@ public class SFTPUtils {
                                 }
                             }
                         } else {
-                            flag = downloadFile(remotePath, filename, localPath, filename);
+                            flag = downloadFile(remotePath, filename, localPath, filename, remoteModifyTime);
                             if (flag) {
                                 filenames.add(localFileName);
                                 if (flag && del) {
@@ -172,8 +176,8 @@ public class SFTPUtils {
                 }
             }
             if (log.isInfoEnabled()) {
-                log.info("download file is success:remotePath=" + remotePath
-                        + " and localPath=" + localPath + ",file size is"
+                log.info("文件目录下载完成 :remotePath=" + remotePath
+                        + " and localPath=" + localPath + " fileEndFormat is: " + fileEndFormat + ",file size is "
                         + v.size());
             }
         } catch (SftpException e) {
@@ -185,24 +189,65 @@ public class SFTPUtils {
     }
 
     /**
+     * 将CST时间类型字符串进行格式化输出
+     *
+     * @param str
+     * @return
+     */
+    public static String CSTFormat(String str) {
+        SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US);
+        Date date = null;
+        try {
+            date = (Date) formatter.parse(str);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);
+    }
+
+    /**
+     * 判断文件是否存在
+     *
+     * @param path 文件路径
+     * @return 存在返回true, 否则返回false
+     */
+    public static boolean isExistFile(String path) {
+
+        if (null == path || "".equals(path.trim())) {
+            return false;
+        }
+
+        File targetFile = new File(path);
+        return targetFile.exists();
+    }
+
+    /**
      * 下载单个文件
      *
      * @param remotePath：远程下载目录(以路径符号结束)
      * @param remoteFileName：下载文件名
      * @param localPath：本地保存目录(以路径符号结束)
      * @param localFileName：保存文件名
+     * @param remoteModifyTime：远程文件修改时间
      * @return
      */
-    public boolean downloadFile(String remotePath, String remoteFileName, String localPath, String localFileName) {
+    public boolean downloadFile(String remotePath, String remoteFileName, String localPath, String localFileName, String remoteModifyTime) {
         FileOutputStream fieloutput = null;
         try {
             // sftp.cd(remotePath);
             File file = new File(localPath + localFileName);
             // mkdirs(localPath + localFileName);
+            String localModifyTime = numberDateFormat(String.valueOf(file.lastModified()), "yyyy-MM-dd HH:mm:ss");
+
+            if (file.exists() && localModifyTime.compareTo(remoteModifyTime) >= 0) {
+                log.info("localModifyTime:" + localModifyTime + "remoteTime: " + remoteModifyTime);
+                log.info("文件:" + localPath + remoteFileName + " 已存在，不需要下载 !!!");
+                return false;
+            }
             fieloutput = new FileOutputStream(file);
             sftp.get(remotePath + remoteFileName, fieloutput);
             if (log.isInfoEnabled()) {
-                log.info("DownloadFile:" + remotePath + remoteFileName + " success from sftp.");
+                log.info("文件:" + remotePath + remoteFileName + " 下载成功.");
             }
             return true;
         } catch (FileNotFoundException e) {
@@ -234,7 +279,33 @@ public class SFTPUtils {
         FileInputStream in = null;
         try {
             createDir(remotePath);
+            Vector vector = sftp.ls(remotePath);
+
             File file = new File(localPath + "\\" + localFileName);
+            if (vector.size() > 0) {
+                vector.iterator();
+                Iterator it = vector.iterator();
+                while (it.hasNext()) {
+                    ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) it.next();
+                    String filename = entry.getFilename();
+                    SftpATTRS attrs = entry.getAttrs();
+                    //文件名一样
+                    if (filename.equals(remoteFileName)) {
+                        String localFileLastModify = SFTPUtils.numberDateFormat(String.valueOf(file.lastModified()), "yyyy-MM-dd HH:mm:ss");
+
+                        String remoteFileLastModify = SFTPUtils.CSTFormat(attrs.getMtimeString());
+
+                        if (remoteFileLastModify.compareTo(localFileLastModify) >= 0) {
+                            log.info("localFile: " + localFileName + " localFileLastModify: " + localFileLastModify +
+                                    " remote lastModify: " + remoteFileLastModify + " 不需要上传");
+                            return false;
+                        }
+                        log.info("localFile: " + localFileName + " localFileLastModify: " + localFileLastModify +
+                                " remote lastModify: " + remoteFileLastModify);
+
+                    }
+                }
+            }
             in = new FileInputStream(file);
             sftp.put(in, remoteFileName);
             return true;
@@ -278,6 +349,23 @@ public class SFTPUtils {
         return false;
     }
 
+    /**
+     * 10位13位时间戳转String 格式（2018-10-15 16:03:27） 日期
+     *
+     * @param timestamp
+     * @param simpleDateFormatType 时间戳类型（"yyyy-MM-dd HH:mm:ss"）
+     * @return
+     */
+    public static String numberDateFormat(String timestamp, String simpleDateFormatType) {
+        SimpleDateFormat sdf = new SimpleDateFormat(simpleDateFormatType);//要转换的时间格式
+        String date = null;
+        if (timestamp.length() == 13) {
+            date = sdf.format(Long.parseLong(timestamp));
+        } else {
+            date = sdf.format(Long.parseLong(timestamp) * 1000);
+        }
+        return date;
+    }
 
     /**
      * 批量上传文件
@@ -296,6 +384,7 @@ public class SFTPUtils {
             for (int i = 0; i < files.length; i++) {
                 if (files[i].isFile()
                         && files[i].getName().indexOf("bak") == -1) {
+
                     if (this.uploadFile(remotePath, files[i].getName(),
                             localPath, files[i].getName())
                             && del) {

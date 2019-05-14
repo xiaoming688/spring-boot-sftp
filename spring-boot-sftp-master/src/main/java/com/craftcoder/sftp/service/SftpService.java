@@ -43,8 +43,29 @@ public class SftpService {
     @Value("${sftp.password}")
     private String sftpPassword;
 
-    @Autowired
+    @Autowired(required = false)
     private SftpAdapter.UploadGateway gateway;
+
+
+    private static Map<String, String> DOWNLOAD_30_MIN = null;
+
+    private static Map<String, String> DOWNLOAD_7_CLOCK = null;
+
+    private String saveLocalPath = "C:\\工作\\en\\really\\Orig\\";
+
+    static {
+        DOWNLOAD_30_MIN = new HashMap<>();
+        DOWNLOAD_30_MIN.put("/sclp/orig/orderstatus/", "Orderstatus\\");
+        DOWNLOAD_30_MIN.put("/sclp/orig/orderunfreeze/", "Orderunfreeze\\");
+
+        DOWNLOAD_7_CLOCK = new HashMap<>();
+        DOWNLOAD_7_CLOCK.put("/sclp/orig/article/", "Article\\");
+        DOWNLOAD_7_CLOCK.put("/sclp/orig/articlelist/", "Articlelist\\");
+        DOWNLOAD_7_CLOCK.put("/sclp/orig/pos/", "Pos\\");
+        DOWNLOAD_7_CLOCK.put("/sclp/orig/starange/", "Starange\\");
+
+    }
+
 
     /**
      * 单文件上传
@@ -171,36 +192,43 @@ public class SftpService {
     }
 
     /**
-     * 每隔3min
+     * 每隔30min
      */
     @Scheduled(cron = "0 0/30 * * * ?")
+//    @Scheduled(cron = "0/10 * * * * ?")
     public void downloadTask() {
         SFTPUtils sftp = null;
         try {
             logger.info(new Date() + " download 30 min task start...");
-
-            Map<String, String> remotePaths = new HashMap<String, String>();
-
-            remotePaths.put("/sclp/orig/orderstatus/", "Orderstatus\\");
-            remotePaths.put("/sclp/orig/orderunfreeze/", "Orderunfreeze\\");
-
-//            String remotePath = "/sclp/orig/";
-            String remoteSendPath = "/sclpsend/test/";
-            // 本地存放地址
-            String localPath = "C:\\工作\\en\\really\\Orig\\";
-            for(String remotePath: remotePaths.keySet()){
-                String localPathTemp = localPath + remotePaths.get(remotePath);
-                File file = new File(localPathTemp);
-                if (!file.exists()) {
-                    file.mkdirs();
-                }
-                sftp = new SFTPUtils(sftpHost, sftpUser, sftpPassword);
-                sftp.connect();
-                sftp.batchDownLoadFile(remotePath, localPathTemp, null, ".eof", false);
-                sftp.batchDownLoadFile(remotePath, localPathTemp, null, ".zip", false);
-                unCompress(file);
+            sftp = new SFTPUtils(sftpHost, sftpUser, sftpPassword);
+            sftp.connect();
+            for (String remotePath : DOWNLOAD_30_MIN.keySet()) {
+                String localPathTemp = saveLocalPath + DOWNLOAD_30_MIN.get(remotePath);
+                processDownloadTask(localPathTemp, remotePath, sftp);
             }
-//            sftp.bacthUploadFile(remoteSendPath, localPath, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (sftp != null) {
+                sftp.disconnect();
+            }
+        }
+    }
+
+    /**
+     * 每隔10min 上传
+     */
+    @Scheduled(cron = "0 0/10 * * * ?")
+    public void uploadTask() {
+        SFTPUtils sftp = null;
+        try {
+            logger.info(new Date() + " uploadTask start...");
+            String remoteSendPath = "/sclpsend/";
+            // 本地存放地址
+            String localPath = "C:\\工作\\en\\reallySend\\Orig\\";
+            sftp = new SFTPUtils(sftpHost, sftpUser, sftpPassword);
+            sftp.connect();
+            sftp.bacthUploadFile(remoteSendPath, localPath, false);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -212,46 +240,39 @@ public class SftpService {
     }
 
     /**
-     * 每天7点下载
+     * 每天7点
      */
     @Scheduled(cron = "0 0 7 * * ?")
     public void downloadEveryTask() {
         SFTPUtils sftp = null;
         try {
-            logger.info(new Date() + " download 7 task start...");
-
-            Map<String, String> remotePaths = new HashMap<String, String>();
-
-            remotePaths.put("/sclp/orig/article/", "Article\\");
-            remotePaths.put("/sclp/orig/articlelist/", "Articlelist\\");
-            remotePaths.put("/sclp/orig/pos/", "Pos\\");
-            remotePaths.put("/sclp/orig/starange/", "Starange\\");
-
-//            String remotePath = "/sclp/orig/";
-            String remoteSendPath = "/sclpsend/test/";
+            logger.info(new Date() + " every 7:00 download start...");
             // 本地存放地址
-            String localPath = "C:\\工作\\en\\really\\Orig\\";
-            for(String remotePath: remotePaths.keySet()){
-                String localPathTemp = localPath + remotePaths.get(remotePath);
-                File file = new File(localPathTemp);
-                if (!file.exists()) {
-                    file.mkdirs();
-                }
-                sftp = new SFTPUtils(sftpHost, sftpUser, sftpPassword);
-                sftp.connect();
-                sftp.batchDownLoadFile(remotePath, localPathTemp, null, ".eof", false);
-                sftp.batchDownLoadFile(remotePath, localPathTemp, null, ".zip", false);
-                unCompress(file);
+            sftp = new SFTPUtils(sftpHost, sftpUser, sftpPassword);
+            sftp.connect();
+            for (String remotePath : DOWNLOAD_7_CLOCK.keySet()) {
+                String localPathTemp = saveLocalPath + DOWNLOAD_7_CLOCK.get(remotePath);
+                processDownloadTask(localPathTemp, remotePath, sftp);
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             if (sftp != null) {
+                logger.info("disconnect");
                 sftp.disconnect();
             }
         }
     }
 
+    public void processDownloadTask(String localPathTemp, String remotePath, SFTPUtils sftp) {
+        File file = new File(localPathTemp);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        sftp.batchDownLoadFile(remotePath, localPathTemp, null, ".eof", false);
+        sftp.batchDownLoadFile(remotePath, localPathTemp, null, ".zip", false);
+        unCompress(file);
+    }
 
 
     public void unCompress(File file) {

@@ -55,36 +55,36 @@ public class SftpAdapter {
     @Bean
     public SessionFactory<ChannelSftp.LsEntry> sftpSessionFactory() {
         DefaultSftpSessionFactory factory = new DefaultSftpSessionFactory(true);
-        factory.setHost(sftpHost);
-        factory.setPort(sftpPort);
-        factory.setUser(sftpUser);
-        if (sftpPrivateKey != null) {
-            factory.setPrivateKey(sftpPrivateKey);
-            factory.setPrivateKeyPassphrase(privateKeyPassPhrase);
-        } else {
-            factory.setPassword(sftpPassword);
-        }
-        factory.setAllowUnknownKeys(true);
+//        factory.setHost(sftpHost);
+//        factory.setPort(sftpPort);
+//        factory.setUser(sftpUser);
+//        if (sftpPrivateKey != null) {
+//            factory.setPrivateKey(sftpPrivateKey);
+//            factory.setPrivateKeyPassphrase(privateKeyPassPhrase);
+//        } else {
+//            factory.setPassword(sftpPassword);
+//        }
+//        factory.setAllowUnknownKeys(true);
         return new CachingSessionFactory<>(factory);
     }
 
-    @Bean
-    @ServiceActivator(inputChannel = "toSftpChannel")
-    public MessageHandler handler() {
-        SftpMessageHandler handler = new SftpMessageHandler(sftpSessionFactory());
-        handler.setRemoteDirectoryExpression(new LiteralExpression(remoteDirectory));
-        handler.setFileNameGenerator(message -> {
-            if (message.getPayload() instanceof File) {
-                return ((File) message.getPayload()).getName();
-            } else {
-                throw new IllegalArgumentException("File expected as payload.");
-            }
-        });
-        return handler;
-    }
-
-
-
+//    @Bean
+//    @ServiceActivator(inputChannel = "toSftpChannel")
+//    public MessageHandler handler() {
+//        SftpMessageHandler handler = new SftpMessageHandler(sftpSessionFactory());
+//        handler.setRemoteDirectoryExpression(new LiteralExpression(remoteDirectory));
+//        handler.setFileNameGenerator(message -> {
+//            if (message.getPayload() instanceof File) {
+//                return ((File) message.getPayload()).getName();
+//            } else {
+//                throw new IllegalArgumentException("File expected as payload.");
+//            }
+//        });
+//        return handler;
+//    }
+//
+//
+//
     @MessagingGateway
     public interface UploadGateway {
         @Gateway(requestChannel = "toSftpChannel")
