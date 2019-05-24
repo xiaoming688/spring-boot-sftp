@@ -163,7 +163,7 @@ public class ZipUtil {
             e.printStackTrace();
             System.out.println("unzip fail!" + e.getMessage());
             return false;
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("unzip fail!" + e.getMessage());
             return false;
