@@ -159,11 +159,10 @@ public class SFTPUtils {
                                 if (flag) {
                                     filenames.add(localFileName);
                                     if (flag && del) {
-//                                        deleteSFTP(remotePath, filename);
+                                        deleteSFTP(remotePath, filename);
                                         //放到bak
                                         String split = remotePath.replace("/orig", "/bak");
-                                        createDir(split);
-                                        uploadFile(split, filename, localPath, filename);
+                                        uploadFile(split, filename, localPath, filename, false);
                                     }
                                 }
                             }
@@ -302,7 +301,7 @@ public class SFTPUtils {
      * @param localFileName：上传的文件名
      * @return
      */
-    public boolean uploadFile(String remotePath, String remoteFileName, String localPath, String localFileName) {
+    public boolean uploadFile(String remotePath, String remoteFileName, String localPath, String localFileName, Boolean flag) {
         FileInputStream in = null;
         FileInputStream eofIn = null;
         try {
@@ -335,13 +334,15 @@ public class SFTPUtils {
                 }
             }
             in = new FileInputStream(file);
-            String eofName = localFileName.substring(0, localFileName.lastIndexOf(".")) + ".eof";
-            File eofFile = new File(localPath + "\\" + eofName);
-            if (!eofFile.exists()) {
-                eofFile.createNewFile();
+            if(flag){
+                String eofName = localFileName.substring(0, localFileName.lastIndexOf(".")) + ".eof";
+                File eofFile = new File(localPath + "\\" + eofName);
+                if (!eofFile.exists()) {
+                    eofFile.createNewFile();
+                }
+                eofIn = new FileInputStream(eofFile);
+                sftp.put(eofIn, eofName);
             }
-            eofIn = new FileInputStream(eofFile);
-            sftp.put(eofIn, eofName);
             sftp.put(in, remoteFileName);
             return true;
         } catch (FileNotFoundException e) {
@@ -423,7 +424,7 @@ public class SFTPUtils {
                         && files[i].getName().indexOf("bak") == -1) {
 
                     if (this.uploadFile(remotePath, files[i].getName(),
-                            localPath, files[i].getName())
+                            localPath, files[i].getName(), true)
                             && del) {
                         deleteFile(localPath + files[i].getName());
                     }
