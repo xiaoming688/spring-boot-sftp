@@ -195,7 +195,7 @@ public class SftpService {
      * 每隔30min
      */
 //    @Scheduled(cron = "0 0/30 * * * ?")
-    @Scheduled(cron = "0/30 * * * * ?")
+//    @Scheduled(cron = "0/30 * * * * ?")
     public void downloadTask() {
         SFTPUtils sftp = null;
         try {
