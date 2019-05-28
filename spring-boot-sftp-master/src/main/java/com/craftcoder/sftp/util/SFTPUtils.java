@@ -56,7 +56,7 @@ public class SFTPUtils {
                 log.info("Session connected.");
             }
 //            Channel channel = sshSession.openChannel("sftp");
-            ChannelSftp channel = (ChannelSftp)sshSession.openChannel("sftp");
+            ChannelSftp channel = (ChannelSftp) sshSession.openChannel("sftp");
             channel.connect();
 
 //            Class cl = ChannelSftp.class;
@@ -160,6 +160,10 @@ public class SFTPUtils {
                                     filenames.add(localFileName);
                                     if (flag && del) {
 //                                        deleteSFTP(remotePath, filename);
+                                        //放到bak
+                                        String split = remotePath.replace("/orig", "/bak");
+                                        createDir(split);
+                                        uploadFile(split, filename, localPath, filename);
                                     }
                                 }
                             }
@@ -169,6 +173,8 @@ public class SFTPUtils {
                                 filenames.add(localFileName);
                                 if (flag && del) {
 //                                    deleteSFTP(remotePath, filename);
+
+
                                 }
                             }
                         }
@@ -298,6 +304,7 @@ public class SFTPUtils {
      */
     public boolean uploadFile(String remotePath, String remoteFileName, String localPath, String localFileName) {
         FileInputStream in = null;
+        FileInputStream eofIn = null;
         try {
             createDir(remotePath);
             Vector vector = sftp.ls(remotePath);
@@ -328,11 +335,20 @@ public class SFTPUtils {
                 }
             }
             in = new FileInputStream(file);
+            String eofName = localFileName.substring(0, localFileName.lastIndexOf(".")) + ".eof";
+            File eofFile = new File(localPath + "\\" + eofName);
+            if (!eofFile.exists()) {
+                eofFile.createNewFile();
+            }
+            eofIn = new FileInputStream(eofFile);
+            sftp.put(eofIn, eofName);
             sftp.put(in, remoteFileName);
             return true;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (SftpException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         } finally {
             if (in != null) {
@@ -518,26 +534,21 @@ public class SFTPUtils {
 
     /**
      * 删除stfp文件
+     *
      * @param directory：要删除文件所在目录
      * @param deleteFile：要删除的文件
-     * @param sftp
      */
-//    public void deleteSFTP(String directory, String deleteFile)
-//    {
-//        try
-//        {
-//            // sftp.cd(directory);
-//            sftp.rm(directory + deleteFile);
-//            if (log.isInfoEnabled())
-//            {
-//                log.info("delete file success from sftp.");
-//            }
-//        }
-//        catch (Exception e)
-//        {
-//            e.printStackTrace();
-//        }
-//    }
+    public void deleteSFTP(String directory, String deleteFile) {
+        try {
+            sftp.cd(directory);
+            sftp.rm(directory + deleteFile);
+            if (log.isInfoEnabled()) {
+                log.info("delete " + directory + deleteFile + " success from sftp.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * 如果目录不存在就创建目录

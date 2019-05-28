@@ -195,7 +195,7 @@ public class SftpService {
      * 每隔30min
      */
 //    @Scheduled(cron = "0 0/30 * * * ?")
-//    @Scheduled(cron = "0/30 * * * * ?")
+    @Scheduled(cron = "0/30 * * * * ?")
     public void downloadTask() {
         SFTPUtils sftp = null;
         try {
@@ -244,7 +244,7 @@ public class SftpService {
      * 每天7点
      */
 //    @Scheduled(cron = "0 30 22 * * ?")
-    @Scheduled(cron = "0 0/1 * * * ?")
+    @Scheduled(cron = "0/20 * * * * ?")
     public void downloadEveryTask() {
         SFTPUtils sftp = null;
         try {
@@ -271,8 +271,9 @@ public class SftpService {
         if (!file.exists()) {
             file.mkdirs();
         }
-        sftp.batchDownLoadFile(remotePath, localPathTemp, null, ".eof", false);
-        sftp.batchDownLoadFile(remotePath, localPathTemp, null, ".zip", false);
+        //zip需要先下載，有eof文件判斷
+        sftp.batchDownLoadFile(remotePath, localPathTemp, null, ".zip", true);
+        sftp.batchDownLoadFile(remotePath, localPathTemp, null, ".eof", true);
         unCompress(file);
     }
 
