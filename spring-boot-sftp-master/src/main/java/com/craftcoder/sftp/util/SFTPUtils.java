@@ -5,6 +5,7 @@ import com.jcraft.jsch.*;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -54,8 +55,16 @@ public class SFTPUtils {
             if (log.isInfoEnabled()) {
                 log.info("Session connected.");
             }
-            Channel channel = sshSession.openChannel("sftp");
+//            Channel channel = sshSession.openChannel("sftp");
+            ChannelSftp channel = (ChannelSftp)sshSession.openChannel("sftp");
             channel.connect();
+
+//            Class cl = ChannelSftp.class;
+//            Field f =cl.getDeclaredField("server_version");
+//            f.setAccessible(true);
+//            f.set(channel, 2);
+//
+//            channel.setFilenameEncoding("GBK");
             if (log.isInfoEnabled()) {
                 log.info("Opening Channel.");
             }
