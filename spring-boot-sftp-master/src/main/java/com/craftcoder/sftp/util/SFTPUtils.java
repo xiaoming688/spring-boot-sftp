@@ -5,7 +5,6 @@ import com.jcraft.jsch.*;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -244,6 +243,19 @@ public class SFTPUtils {
                 log.info("文件:" + localPath + remoteFileName + " 已存在，不需要下载 !!!");
                 return false;
             }
+            //判断该文件eof文件是否存在，不存在就不下载
+            String name = remoteFileName.substring(0, remoteFileName.lastIndexOf("."));
+            try {
+                Vector content = sftp.ls(remotePath + name + ".eof");
+                if (content == null || content.isEmpty()) {
+                    log.info("文件:" + localPath + remoteFileName + " eof不存在存在，不需要下载 !!!");
+                    return false;
+                }
+            } catch (Exception e) {
+                log.info("文件:" + localPath + remoteFileName + " eof不存在存在，不需要下载 !!!.....");
+                return false;
+            }
+
             fieloutput = new FileOutputStream(file);
             sftp.get(remotePath + remoteFileName, fieloutput);
             if (log.isInfoEnabled()) {
