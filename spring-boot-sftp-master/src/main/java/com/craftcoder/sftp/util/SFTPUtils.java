@@ -334,7 +334,7 @@ public class SFTPUtils {
                 }
             }
             in = new FileInputStream(file);
-            if(flag){
+            if (flag) {
                 String eofName = localFileName.substring(0, localFileName.lastIndexOf(".")) + ".eof";
                 File eofFile = new File(localPath + "\\" + eofName);
                 if (!eofFile.exists()) {
@@ -426,7 +426,7 @@ public class SFTPUtils {
                     if (this.uploadFile(remotePath, files[i].getName(),
                             localPath, files[i].getName(), true)
                             && del) {
-                        deleteFile(localPath + files[i].getName());
+                        deleteFile(localPath + "\\" + files[i].getName());
                     }
                 } else if (files[i].isDirectory()) {
                     //只能一层
@@ -471,7 +471,7 @@ public class SFTPUtils {
         }
         boolean rs = file.delete();
         if (rs && log.isInfoEnabled()) {
-            log.info("delete file success from local.");
+            log.info("delete file " + filePath + " success from local.");
         }
         return rs;
     }

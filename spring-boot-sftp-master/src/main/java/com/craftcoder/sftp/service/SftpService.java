@@ -229,7 +229,7 @@ public class SftpService {
             String localPath = "C:\\工作\\en\\reallySend\\Orig\\";
             sftp = new SFTPUtils(sftpHost, sftpUser, sftpPassword);
             sftp.connect();
-            sftp.bacthUploadFile(remoteSendPath, localPath, false);
+            sftp.bacthUploadFile(remoteSendPath, localPath, true);
 
         } catch (Exception e) {
             e.printStackTrace();
