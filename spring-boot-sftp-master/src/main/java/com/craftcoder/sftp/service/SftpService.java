@@ -219,7 +219,7 @@ public class SftpService {
      * 每隔10min 上传
      */
 //    @Scheduled(cron = "0 0/10 * * * ?")
-    @Scheduled(cron = "0 0/2 * * * ?")
+    @Scheduled(cron = "0 0/20 * * * ?")
     public void uploadTask() {
         SFTPUtils sftp = null;
         try {

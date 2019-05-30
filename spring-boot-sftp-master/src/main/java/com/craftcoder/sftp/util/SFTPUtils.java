@@ -342,6 +342,10 @@ public class SFTPUtils {
                 }
                 eofIn = new FileInputStream(eofFile);
                 sftp.put(eofIn, eofName);
+                if (eofIn != null) {
+                    eofIn.close();
+                }
+                deleteFile(localPath + "\\" + eofName);
             }
             sftp.put(in, remoteFileName);
             return true;
