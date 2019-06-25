@@ -422,6 +422,9 @@ public class SFTPUtils {
         try {
 //            connect();
             File file = new File(localPath);
+            if (file == null) {
+                return false;
+            }
             File[] files = file.listFiles();
             for (int i = 0; i < files.length; i++) {
                 if (files[i].isFile()

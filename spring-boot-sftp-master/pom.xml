@@ -54,7 +54,7 @@
     </dependencies>
 
     <build>
-        <finalName>sftp-tool-1.9</finalName>
+        <finalName>sftp-tool-2.0</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

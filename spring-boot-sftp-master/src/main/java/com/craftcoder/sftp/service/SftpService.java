@@ -194,7 +194,7 @@ public class SftpService {
     /**
      * 每隔30min
      */
-    @Scheduled(cron = "0 0/5 * * * ?")
+    @Scheduled(cron = "0 0/3 * * * ?")
 //    @Scheduled(cron = "0/30 * * * * ?")
     public void downloadTask() {
         SFTPUtils sftp = null;
@@ -218,7 +218,7 @@ public class SftpService {
     /**
      * 每隔10min 上传
      */
-    @Scheduled(cron = "0 0/5 * * * ?")
+    @Scheduled(cron = "0 0/1 * * * ?")
 //    @Scheduled(cron = "0 0/2 * * * ?")
     public void uploadTask() {
         SFTPUtils sftp = null;
@@ -244,7 +244,7 @@ public class SftpService {
      * 每天7点
      */
 //    @Scheduled(cron = "0 30 22 * * ?")
-    @Scheduled(cron = "0 0/5 * * * ?")
+    @Scheduled(cron = "0 0/3 * * * ?")
     public void downloadEveryTask() {
         SFTPUtils sftp = null;
         try {
