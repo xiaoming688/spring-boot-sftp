@@ -426,6 +426,9 @@ public class SFTPUtils {
                 return false;
             }
             File[] files = file.listFiles();
+            if (files == null) {
+                return false;
+            }
             for (int i = 0; i < files.length; i++) {
                 if (files[i].isFile()
                         && files[i].getName().indexOf("bak") == -1) {
