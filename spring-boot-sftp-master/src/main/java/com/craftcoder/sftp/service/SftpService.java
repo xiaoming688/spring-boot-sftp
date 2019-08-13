@@ -64,6 +64,9 @@ public class SftpService {
         DOWNLOAD_7_CLOCK.put("/sclp/orig/pos/", "Pos\\");
         DOWNLOAD_7_CLOCK.put("/sclp/orig/starange/", "Starange\\");
 
+        DOWNLOAD_7_CLOCK.put("/sclp/orig/milestone/", "Milestone\\");
+        DOWNLOAD_7_CLOCK.put("/sclp/orig/discount/", "Discount\\");
+
     }
 
 
