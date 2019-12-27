@@ -116,12 +116,16 @@ public class SFTPUtils {
             // connect();
             Vector v = listFiles(remotePath);
             // sftp.cd(remotePath);
+            log.info("batchDownLoadFile: " + remotePath + " :size:" + v.size());
             if (v.size() > 0) {
                 log.info("本次处理文件个数不为零,开始下载" + remotePath + ": " + fileEndFormat);
                 Iterator it = v.iterator();
                 while (it.hasNext()) {
                     ChannelSftp.LsEntry entry = (ChannelSftp.LsEntry) it.next();
                     String filename = entry.getFilename();
+                    if (filename.equals(".") || filename.equals("..")) {
+                        continue;
+                    }
                     SftpATTRS attrs = entry.getAttrs();
                     if (!attrs.isDir()) {
                         boolean flag = false;
