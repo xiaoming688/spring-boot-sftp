@@ -249,6 +249,7 @@ public class SFTPUtils {
      * @return
      */
     public boolean downloadFile(String remotePath, String remoteFileName, String localPath, String localFileName, String remoteModifyTime) {
+        log.info("downloadFile remotePath {}, remoteFileName {}, localPath {}, localFileName {}", remotePath, remoteFileName, localPath, localFileName);
         FileOutputStream fieloutput = null;
         try {
             // sftp.cd(remotePath);
@@ -266,12 +267,20 @@ public class SFTPUtils {
             try {
                 Vector content = sftp.ls(remotePath + name + ".eof");
                 if (content == null || content.isEmpty()) {
-                    log.info("文件:" + localPath + remoteFileName + " eof不存在存在，不需要下载 !!!");
+                    log.info("文件:" + localPath + remoteFileName + " eof不存在，不需要下载 !!!");
                     return false;
                 }
             } catch (Exception e) {
-                log.info("文件:" + localPath + remoteFileName + " eof不存在存在，不需要下载 !!!.....");
+                log.info("文件:" + localPath + remoteFileName + " eof不存在，不需要下载 !!!.....");
                 return false;
+            }
+            //下载eof 检查本地是否有对应zip
+            if (remoteFileName.endsWith(".eof")) {
+                File fileZip = new File(localPath + name + ".zip");
+                if (!fileZip.exists()) {
+                    log.info("文件:" + localPath + name + ".eof zip不存在，不需要下载 !!!.....");
+                    return false;
+                }
             }
 
             fieloutput = new FileOutputStream(file);

@@ -51,21 +51,21 @@ public class SftpService {
 
     private static Map<String, String> DOWNLOAD_7_CLOCK = null;
 
-    private String saveLocalPath = "D:\\工作\\en\\really\\Orig\\";
+    private String saveLocalPath = "C:\\工作\\en\\really\\Orig\\";
 
     static {
         DOWNLOAD_30_MIN = new HashMap<>();
-        DOWNLOAD_30_MIN.put("/bjfy/orig/orderstatus/", "Orderstatus\\");
-        DOWNLOAD_30_MIN.put("/bjfy/orig/orderunfreeze/", "Orderunfreeze\\");
+        DOWNLOAD_30_MIN.put("/sclp/orig/orderstatus/", "Orderstatus\\");
+        DOWNLOAD_30_MIN.put("/sclp/orig/orderunfreeze/", "Orderunfreeze\\");
 
         DOWNLOAD_7_CLOCK = new HashMap<>();
-        DOWNLOAD_7_CLOCK.put("/bjfy/orig/article/", "Article\\");
-        DOWNLOAD_7_CLOCK.put("/bjfy/orig/articlelist/", "Articlelist\\");
-        DOWNLOAD_7_CLOCK.put("/bjfy/orig/pos/", "Pos\\");
-        DOWNLOAD_7_CLOCK.put("/bjfy/orig/starange/", "Starange\\");
+        DOWNLOAD_7_CLOCK.put("/sclp/orig/article/", "Article\\");
+        DOWNLOAD_7_CLOCK.put("/sclp/orig/articlelist/", "Articlelist\\");
+        DOWNLOAD_7_CLOCK.put("/sclp/orig/pos/", "Pos\\");
+        DOWNLOAD_7_CLOCK.put("/sclp/orig/starange/", "Starange\\");
 
-        DOWNLOAD_7_CLOCK.put("/bjfy/orig/milestone/", "Milestone\\");
-        DOWNLOAD_7_CLOCK.put("/bjfy/orig/discount/", "Discount\\");
+        DOWNLOAD_7_CLOCK.put("/sclp/orig/milestone/", "Milestone\\");
+        DOWNLOAD_7_CLOCK.put("/sclp/orig/discount/", "Discount\\");
 
     }
 
@@ -227,9 +227,9 @@ public class SftpService {
         SFTPUtils sftp = null;
         try {
             logger.info(new Date() + " uploadTask start...");
-            String remoteSendPath = "/bjfysend/orig/";
+            String remoteSendPath = "/sclpsend/orig/";
             // 本地存放地址
-            String localPath = "D:\\工作\\en\\reallySend\\Orig\\";
+            String localPath = "C:\\工作\\en\\reallySend\\Orig\\";
             sftp = new SFTPUtils(sftpHost, sftpUser, sftpPassword);
             sftp.connect();
             sftp.bacthUploadFile(remoteSendPath, localPath, true);

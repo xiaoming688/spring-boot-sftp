@@ -1,5 +1,8 @@
 package com.craftcoder.sftp.util;
 
+import com.craftcoder.sftp.controller.RestUploadController;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +15,7 @@ import java.util.zip.ZipOutputStream;
  * @create 2019-05-13 13:41
  **/
 public class ZipUtil {
-
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(ZipUtil.class);
     /**
      * 缓冲器大小
      */
@@ -126,7 +129,7 @@ public class ZipUtil {
      * @return
      */
     public static boolean unzip(String zipFileName, String dstPath) {
-        System.out.println("zip unCompressing...zip FileName: " + zipFileName + " dstPath: " + dstPath);
+        log.info("zip unCompressing...zip FileName: " + zipFileName + " dstPath: " + dstPath);
         ZipInputStream zipInputStream = null;
         try {
             zipInputStream = new ZipInputStream(new FileInputStream(zipFileName));
@@ -142,14 +145,14 @@ public class ZipUtil {
 
                     if (!dir.exists()) {
                         dir.mkdirs();
-                        System.out.println("mkdirs: " + dir.getCanonicalPath());
+                        log.info("mkdirs: " + dir.getCanonicalPath());
                         continue;
                     }
                 }
 
                 //若是文件，则需创建该文件
                 File file = createFile(dstPath, zipEntry.getName());
-                System.out.println("file created: " + file.getCanonicalPath());
+                log.info("file created: " + file.getCanonicalPath());
                 OutputStream outputStream = new FileOutputStream(file);
 
                 while ((readLength = zipInputStream.read(buffer, 0, BUFFER)) != -1) {
@@ -157,18 +160,18 @@ public class ZipUtil {
                 }
 
                 outputStream.close();
-                System.out.println("file uncompressed: " + file.getCanonicalPath());
+                log.info("file uncompressed: " + file.getCanonicalPath());
             }    // end while
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            System.out.println("unzip fail!" + e.getMessage());
+            log.info("unzip fail!" + e.getMessage());
             return false;
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("unzip fail!" + e.getMessage());
+            log.info("unzip fail!" + e.getMessage());
             return false;
-        }finally {
-            if(zipInputStream!=null){
+        } finally {
+            if (zipInputStream != null) {
                 try {
                     zipInputStream.close();
                 } catch (IOException e) {
@@ -177,7 +180,7 @@ public class ZipUtil {
             }
         }
 
-        System.out.println("unzip success!");
+        log.info("unzip success!");
 
         return true;
     }
